@@ -5,6 +5,7 @@ always try to use ' over "
 
 """
 import time
+import json
 from enum import Enum
 # constants
 TIMING_FUNCTION = time.perf_counter
@@ -23,7 +24,7 @@ def formatTime(s, force_unused=False):
     hours, minutes = divmod(s, 3600)
     minutes, seconds = divmod(minutes, 60)
     pad = lambda x: '0'[len(str(x))-1:]+str(x)
-    return f"{pad(hours)+':' if force_unused or hours != 0 else ''}{pad(minutes)+':' if force_unused or hours != 0 or minutes != 0 else ''}{pad(seconds)}.{decimal}"
+    return f"{pad(hours)+':' if force_unused or hours != 0 else ''}{pad(minutes)+':' if force_unused or hours != 0 or minutes != 0 else ''}{pad(seconds) if any((hours,minutes)) else seconds}.{decimal}"
 
 class Timer:
     def __init__(self, run=None):
@@ -78,6 +79,32 @@ class Run:
         self.category = category
         self.segments = []
         self.attempts = 0
+
+    def sum_of_best(self):
+        if len(self.segments) == 0 or any(map(lambda x: x.best == None,self.segments)): return None
+        else: return sum(map(lambda x: x.best, self.segments))
+
+    def save(self, path, lss=False):
+        if lss:
+            # to be implemented
+            return
+        else:
+            final = self.__dict__.copy()
+            final['segments'] = [i.__dict__ for i in self.segments]
+            with open(path,'w',encoding='utf-8') as file:
+                json.dump(final,file,indent=4)
+
+    @classmethod
+    def from_json(cls, path):
+        with open(path,encoding='utf-8') as file:
+            j = json.load(file)
+            run = Run()
+            run.__dict__.update(j)
+            for j,i in enumerate(run.segments):
+                s = Segment()
+                s.__dict__.update(i)
+                run.segments[j] = s
+            return run
 
 class Segment:
     def __init__(self, name=''):
