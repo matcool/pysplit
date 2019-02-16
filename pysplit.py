@@ -1,4 +1,4 @@
-import livesplit_core as lscore
+import core.livesplit_core as lscore
 
 class RunEditorError(Exception): pass
 
