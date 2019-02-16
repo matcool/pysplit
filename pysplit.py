@@ -18,13 +18,15 @@ class TimerState(Enum):
     # not yet implemented
     PAUSED = 3
 
-def formatTime(s, force_unused=False):
+def format_time(s, force_unused=False):
     decimal = str(float(s)).split('.')[1]
     s = int(s)
     hours, minutes = divmod(s, 3600)
     minutes, seconds = divmod(minutes, 60)
     pad = lambda x: '0'[len(str(x))-1:]+str(x)
-    return f"{pad(hours)+':' if force_unused or hours != 0 else ''}{pad(minutes)+':' if force_unused or hours != 0 or minutes != 0 else ''}{pad(seconds) if any((hours,minutes)) else seconds}.{decimal}"
+    return f"{pad(hours)+':' if any((hours,force_unused)) else ''}\
+{pad(minutes)+':' if any((hours,minutes,force_unused)) else ''}\
+{pad(seconds) if any((hours,minutes,force_unused)) else seconds}.{decimal}"
 
 class Timer:
     def __init__(self, run=None):
