@@ -1,2 +1,2 @@
-# pyspit
+# pysplit
 shitty remake of livesplit
