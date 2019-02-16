@@ -14,6 +14,6 @@ for i in to_type:
         msg = input(f'QUICK!!! Type {i}: ')
     timer.split()
 
-print(f'Congratulations! You took {timer.time()}s to type: {", ".join(to_type)}')
+print(f'Congratulations! You took {formatTime(timer.time())}s to type: {", ".join(to_type)}')
 timer.reset()
 print('\n'.join(f'{i.name} - {i.best}' for i in run.segments))
