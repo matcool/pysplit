@@ -63,9 +63,13 @@ class Timer:
 
     def reset(self, save=True):
         if save and self.run != None and len(self.run.segments) > 0:
+            pb = self.run.pb_time()
+            segments = self.run.segments
             for i,t in enumerate(self.times):
-                self.run.segments[i].add_time(t)
-
+                segments[i].add_time(t)
+                if segments[i].pb == None or pb > self.time():
+                    segments[i].pb = len(segments[i].history)-1
+                    
         if self.state != TimerState.ENDED and self.run != None:
             self.run.attempts += 1
 
@@ -87,6 +91,14 @@ class Run:
     def sum_of_best(self):
         if len(self.segments) == 0 or any(map(lambda x: x.best == None,self.segments)): return None
         else: return sum(map(lambda x: x.best, self.segments))
+
+    def pb_time(self):
+        s = 0
+        for i in self.segments:
+            if i.pb == None:
+                return None
+            s += i.history[i.pb]
+        return s
 
     def save(self, path, lss=False):
         if lss:
@@ -118,6 +130,7 @@ class Segment:
         self.name = name
         self.history = []
         self.best = None
+        self.pb = None
 
     def add_time(self, time):
         if self.best == None or time < self.best:
