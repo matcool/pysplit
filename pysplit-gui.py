@@ -2,6 +2,7 @@ import pygame, sys
 from pygame.locals import *
 import keyboard
 from pysplit import *
+from sys import argv
 
 def rgb(h):
     return (
@@ -17,8 +18,10 @@ class colors:
     slower = rgb(0xf2463a),
     gold = rgb(0xf2d235),
     current = rgb(0x59a6d6)
-
-name = input('Splits file: ')
+if len(argv) > 0:
+    name = argv[1]
+else:
+    name = input('Splits file: ')
 if name.endswith('.lss'):
     run = Run.from_lss(name)
 else:
