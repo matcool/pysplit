@@ -3,8 +3,11 @@ from pygame.locals import *
 import keyboard
 from pysplit import *
 
-# yes hardcoded file great code
-run = Run.from_json('test.json')
+name = input('Splits file: ')
+if name.endswith('.lss'):
+    run = Run.from_lss(name)
+else:
+    run = Run.from_json(name)
 timer = Timer(run)
 width, height = 300, 100
 segHeight = 50
