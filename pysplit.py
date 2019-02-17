@@ -18,15 +18,16 @@ class TimerState(Enum):
     # not yet implemented
     PAUSED = 3
 
-def format_time(s, force_unused=False):
+def format_time(s, force_unused=False, decimal_places=DECIMAL_ACCURACY):
     decimal = str(float(s)).split('.')[1]
     s = int(s)
     hours, minutes = divmod(s, 3600)
     minutes, seconds = divmod(minutes, 60)
     pad = lambda x: '0'[len(str(x))-1:]+str(x)
-    return f"{pad(hours)+':' if any((hours,force_unused)) else ''}\
-{pad(minutes)+':' if any((hours,minutes,force_unused)) else ''}\
-{pad(seconds) if any((hours,minutes,force_unused)) else seconds}.{decimal}"
+    pad_decimal = lambda x: x[:decimal_places]+('0'*decimal_places)[len(x):]
+    return f"{pad(hours)+':' if force_unused else str(hours)+':' if hours != 0 else ''}\
+{pad(minutes)+':' if any((hours,force_unused)) else str(minutes)+':' if minutes != 0 else ''}\
+{pad(seconds) if any((hours,minutes,force_unused)) else seconds}.{pad_decimal(decimal)}"
 
 class Timer:
     def __init__(self, run=None):
@@ -35,19 +36,23 @@ class Timer:
         self.run = run
         self.times = []
         self.state = TimerState.NOTHING
+        self.start_offset = 0
 
     def start(self, force=False):
         if not force and self.state != TimerState.NOTHING:
             raise Exception(f'Timer is currently {self.state.name.lower()}, please reset, finish the run or pass in force=True')
-        self.start_time = TIMING_FUNCTION()
+        self.start_time = TIMING_FUNCTION() + self.start_offset
         self.end_time = None
         self.times = []
         self.last_time = 0
         self.state = TimerState.RUNNING
 
-    def time(self):
+    def time(self, force=False):
         if self.state == TimerState.NOTHING:
-            raise Exception('Timer is not currently running.')
+            if force:
+                return self.start_offset
+            else:
+                raise Exception('Timer is not currently running.')
         return round((self.end_time if self.state == TimerState.ENDED else TIMING_FUNCTION()) - self.start_time,DECIMAL_ACCURACY)
 
     def split(self):
@@ -63,7 +68,7 @@ class Timer:
                 self.run.attempts += 1
 
     def reset(self, save=True):
-        if save and self.run != None:
+        if save and self.run != None and len(self.run.segments) > 0:
             for i,t in enumerate(self.times):
                 self.run.segments[i].add_time(t)
 
