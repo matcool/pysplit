@@ -20,3 +20,4 @@ def do_run():
     print('\n'.join(f'{i.name} - {i.best}' for i in run.segments))
 
 do_run()
+run.save('test.json')
