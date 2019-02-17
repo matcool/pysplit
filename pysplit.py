@@ -1,6 +1,7 @@
 import time
 import json
 from enum import Enum
+import xml.etree.ElementTree as ElTree
 # constants
 TIMING_FUNCTION = time.perf_counter
 DECIMAL_ACCURACY = 7
@@ -12,7 +13,8 @@ class TimerState(Enum):
     # not yet implemented
     PAUSED = 3
 
-def format_time(s, force_unused=False, decimal_places=DECIMAL_ACCURACY):
+def format_time(s, force_unused=False, decimal_places=None):
+    if decimal_places == None: decimal_places = DECIMAL_ACCURACY
     decimal = str(float(s)).split('.')[1]
     s = int(s)
     hours, minutes = divmod(s, 3600)
@@ -23,6 +25,14 @@ def format_time(s, force_unused=False, decimal_places=DECIMAL_ACCURACY):
 {pad(minutes)+':' if any((hours,force_unused)) else str(minutes)+':' if minutes != 0 else ''}\
 {pad(seconds) if any((hours,minutes,force_unused)) else seconds}.{pad_decimal(decimal)}"
 
+def parse_time(s):
+    s = s.split(':')
+    t = float(s[-1])
+    s.pop(-1)
+    for i,s in enumerate(reversed(s)):
+        t += int(s)*(60**(i+1))
+    return t
+
 class Timer:
     def __init__(self, run=None):
         self.start_time = None
@@ -30,7 +40,7 @@ class Timer:
         self.run = run
         self.times = []
         self.state = TimerState.NOTHING
-        self.start_offset = 0
+        self.start_offset = 0 if self.run == None else self.run.start_offset
 
     def start(self, force=False):
         if not force and self.state != TimerState.NOTHING:
@@ -68,8 +78,8 @@ class Timer:
             for i,t in enumerate(self.times):
                 segments[i].add_time(t)
                 if segments[i].pb == None or pb > self.time():
-                    segments[i].pb = len(segments[i].history)-1
-                    
+                    segments[i].pb = t
+
         if self.state != TimerState.ENDED and self.run != None:
             self.run.attempts += 1
 
@@ -87,6 +97,7 @@ class Run:
         self.category = category
         self.segments = []
         self.attempts = 0
+        self.start_offset = 0
 
     def sum_of_best(self):
         if len(self.segments) == 0 or any(map(lambda x: x.best == None,self.segments)): return None
@@ -97,7 +108,7 @@ class Run:
         for i in self.segments:
             if i.pb == None:
                 return None
-            s += i.history[i.pb]
+            s += i.pb
         return s
 
     def save(self, path, lss=False):
@@ -122,8 +133,30 @@ class Run:
                 run.segments[j] = s
             return run
 
+    @classmethod
+    def from_lss(cls, path, time='RealTime'):
+        run = Run()
+        tree = ElTree.parse(path).getroot()
+        alias = [('GameName','name'),('CategoryName','category'),('Offset','start',parse_time),('AttemptCount','attempts',int)]
+        for i in alias:
+            e = tree.find(i[0]).text
+            if len(i) == 3: e = i[2](e)
+            setattr(run, i[1], e)
+
+        p = 0
+        for seg in tree.find('Segments'):
+            s = Segment(seg.find('Name').text)
+            for i in seg.find('SegmentHistory'):
+                s.add_time(parse_time(i.find(time).text))
+            t = parse_time(seg.find('SplitTimes')[0].find(time).text)
+            s.pb = t-p
+            p = t
+            run.segments.append(s)
+
+        return run
+
     def __repr__(self):
-        return f'<{self.name} {self.category} run with {len(segments)} segments>'
+        return f'<{self.name} {self.category} run with {len(self.segments)} segments>'
 
 class Segment:
     def __init__(self, name=''):
