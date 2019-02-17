@@ -55,7 +55,7 @@ def draw_segments():
                 color = (109,206,82)
         draw_text(seg.name,0,segHeight*i+50,segHeight-segGap,color=color)
         if seg.pb != None:
-            t = seg.history[seg.pb]
+            t = seg.pb
             if i > current_seg - 1:
                 draw_text(format_time(t+s,decimal_places=2) if t+s < 60 else format_time(int(t+s),decimal_places=2),
                     width-5,segHeight*i+50+segHeight//6,segHeight//3,align='right',alignY='center',font='ubuntumedium')
