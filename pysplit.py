@@ -1,9 +1,3 @@
-"""
-reminders:
-use snake case because yes
-always try to use ' over " 
-
-"""
 import time
 import json
 from enum import Enum
