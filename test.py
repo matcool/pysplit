@@ -15,9 +15,9 @@ def do_run():
             msg = input(f'QUICK!!! Type {i}: ')
         timer.split()
 
-    print(f'Congratulations! You took {formatTime(timer.time())}s to type: {", ".join(to_type)}')
+    print(f'Congratulations! You took {format_time(timer.time())}s to type: {", ".join(to_type)}')
     timer.reset()
-    print('\n'.join(f'{i.name} - {i.best}' for i in run.segments))
+    print('\n'.join(f'{i.name} - {i.history[-1]}' for i in run.segments))
 
 do_run()
 run.save('test.json')
