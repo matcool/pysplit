@@ -1,1 +1,5 @@
 __pycache__/
+*.sublime-project
+*.sublime-workspace
+# splits to test with
+splits/
