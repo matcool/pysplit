@@ -25,7 +25,7 @@ def start_or_split(*args):
 
 keyboard.on_press_key('f5',start_or_split)
 
-def draw_text(text,x,y,size,color=(255,255,255),font=None,align=None):
+def draw_text(text,x,y,size,color=(255,255,255),font=None,align=None,alignY=None):
     try:
         font = pygame.font.SysFont(font, size)
         surface = font.render(text,1,color)
@@ -33,15 +33,19 @@ def draw_text(text,x,y,size,color=(255,255,255),font=None,align=None):
         yoff = 0
         if align == 'center':
             xoff = -surface.get_width()/2
-            yoff = -surface.get_height()/2
-        elif align == 'right':
+            if alignY == None:
+                yoff = -surface.get_height()/2
+        if align == 'right':
             xoff = -surface.get_width()
+        if alignY == 'center':
+            yoff = -surface.get_height()/2
         screen.blit(surface,(x+xoff,y+yoff))
     except pygame.error:
         pass
 
 def draw_segments():
     current_seg = len(timer.times)
+    s = 0
     for i, seg in enumerate(run.segments):
         color = (255,255,255)
         if timer.state != TimerState.NOTHING:
@@ -50,8 +54,14 @@ def draw_segments():
             elif i < current_seg:
                 color = (109,206,82)
         draw_text(seg.name,0,segHeight*i+50,segHeight-segGap,color=color)
+        if seg.pb != None:
+            t = seg.history[seg.pb]
+            if i > current_seg - 1:
+                draw_text(format_time(t+s,decimal_places=2) if t+s < 60 else format_time(int(t+s),decimal_places=2),
+                    width-5,segHeight*i+50+segHeight//6,segHeight//3,align='right',alignY='center',font='ubuntumedium')
+            s += t
 
-while 1:
+while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.display.quit()
