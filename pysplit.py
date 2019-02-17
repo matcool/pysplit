@@ -74,6 +74,9 @@ class Timer:
         self.start_time = None
         self.end_time = None
 
+    def __repr__(self):
+        return f'<Timer currently {self.state.name}>'
+
 class Run:
     def __init__(self, name='', category=''):
         self.name = name
@@ -107,6 +110,9 @@ class Run:
                 run.segments[j] = s
             return run
 
+    def __repr__(self):
+        return f'<{self.name} {self.category} run with {len(segments)} segments>'
+
 class Segment:
     def __init__(self, name=''):
         self.name = name
@@ -117,3 +123,6 @@ class Segment:
         if self.best == None or time < self.best:
             self.best = time
         self.history.append(time)
+
+    def __repr__(self):
+        return f'<{self.name} Segment>'
