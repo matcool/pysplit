@@ -3,15 +3,31 @@ from pygame.locals import *
 import keyboard
 from pysplit import *
 
+def rgb(h):
+    return (
+        (h & 0xff0000) >> 16,
+        (h & 0x00ff00) >> 8,
+        (h & 0x0000ff)
+    )
+class colors:
+    background = rgb(0),
+    backgroundalt = rgb(0x070707)
+    text = rgb(0xffffff),
+    faster = rgb(0x6dce52),
+    slower = rgb(0xf2463a),
+    gold = rgb(0xf2d235),
+    current = rgb(0x59a6d6)
+
 name = input('Splits file: ')
 if name.endswith('.lss'):
     run = Run.from_lss(name)
 else:
     run = Run.from_json(name)
 timer = Timer(run)
-width, height = 300, 100
+# space for the title / timer
+offset = 50
+width, height = 300, offset*2
 segHeight = 50
-segGap = 10
 height += len(run.segments)*segHeight
 size = (width, height)
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
@@ -50,18 +66,16 @@ def draw_segments():
     current_seg = len(timer.times)
     s = 0
     for i, seg in enumerate(run.segments):
-        color = (255,255,255)
-        if timer.state != TimerState.NOTHING:
-            if i == current_seg:
-                color = (82,159,206)
-            elif i < current_seg:
-                color = (109,206,82)
-        draw_text(seg.name,0,segHeight*i+50,segHeight-segGap,color=color)
+        color = colors.background if i % 2 == 0 else colors.backgroundalt
+        if timer.state != TimerState.NOTHING and i == current_seg:
+            color = colors.current
+        pygame.draw.rect(screen, color, (0,segHeight*i+offset,width,segHeight),0)
+        draw_text(seg.name,5,int(segHeight*(i+0.5))+offset,int(segHeight//1.5),alignY='center')
         if seg.pb != None:
             t = seg.pb
             if i > current_seg - 1:
                 draw_text(format_time(t+s,decimal_places=2) if t+s < 60 else format_time(int(t+s),decimal_places=2),
-                    width-5,segHeight*i+50+segHeight//6,segHeight//3,align='right',alignY='center',font='ubuntumedium')
+                    width-5,int(segHeight*(i+0.5))+offset,segHeight//3,align='right',alignY='center',font='ubuntumedium,ubuntumono')
             s += t
 
 while True:
@@ -72,11 +86,12 @@ while True:
         elif event.type == VIDEORESIZE:
             size = width,height = event.size
             screen = pygame.display.set_mode(size, pygame.RESIZABLE)
-    screen.fill((0,0,0))
+    screen.fill(colors.background)
 
     draw_segments()
+    pygame.draw.rect(screen,colors.backgroundalt,(0,0,width,offset),0)
     draw_text(run.name,width/2,13,26,align='center')
     draw_text(run.category,width/2,30,20,align='center')
-    draw_text(format_time(timer.time(force=True),decimal_places=2),width-10,height-50,40,font='ubuntumedium',align='right')
-
+    draw_text(format_time(timer.time(force=True),decimal_places=2),width-5,height-offset//2,40,font='ubuntumedium,ubuntu',align='right',alignY='center')
+ 
     pygame.display.update() 
