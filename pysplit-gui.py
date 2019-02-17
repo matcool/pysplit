@@ -18,7 +18,8 @@ class colors:
     slower = rgb(0xf2463a),
     gold = rgb(0xf2d235),
     current = rgb(0x59a6d6)
-if len(argv) > 0:
+
+if len(argv) == 2:
     name = argv[1]
 else:
     name = input('Splits file: ')
@@ -27,12 +28,14 @@ if name.endswith('.lss'):
 else:
     run = Run.from_json(name)
 timer = Timer(run)
+
 # space for the title / timer
 offset = 50
 width, height = 300, offset*2
 segHeight = 50
 height += len(run.segments)*segHeight
 size = (width, height)
+
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
 pygame.display.set_caption('PySplit')
 pygame.init()
