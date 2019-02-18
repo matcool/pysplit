@@ -6,6 +6,8 @@ from sys import argv
 
 # how many digits to show
 N_DECIMAL = 2
+# used to get if key is pressed
+KEYS_DOWN = []
 
 def rgb(h):
     return (
@@ -26,7 +28,9 @@ if len(argv) == 2:
     name = argv[1]
 else:
     name = input('Splits file: ')
-if name.endswith('.lss'):
+if name in ('none','None',''):
+    run = None
+elif name.endswith('.lss'):
     run = Run.from_lss(name)
 else:
     run = Run.from_json(name)
@@ -34,9 +38,11 @@ timer = Timer(run)
 
 # space for the title / timer
 offset = 50
+# remove title space if run is none
+if timer.run == None: offset //= 2
 width, height = 300, offset*2
 segHeight = 50
-height += len(run.segments)*segHeight
+if timer.run: height += len(run.segments)*segHeight
 size = (width, height)
 
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
@@ -98,6 +104,15 @@ def draw_segments():
                 draw_text(dt, width*2//3, int(segHeight*(i+0.5))+offset, segHeight//3,
                     color=color, align='center', font='ubuntumedium,ubuntumono')
 
+def isPressed(key):
+    # returns true if the key has just been pressed
+    try:
+        tmp = KEYS_DOWN[key]
+    except IndexError:
+        return pygame.key.get_pressed()[key]
+    else:
+        return not tmp and pygame.key.get_pressed()[key]
+
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -107,11 +122,12 @@ while True:
             size = width,height = event.size
             screen = pygame.display.set_mode(size, pygame.RESIZABLE)
     screen.fill(colors.background)
-
-    draw_segments()
-    pygame.draw.rect(screen,colors.backgroundalt,(0,0,width,offset),0)
-    draw_text(run.name,width/2,13,26,align='center')
-    draw_text(run.category,width/2,30,20,align='center')
-    draw_text(format_time(timer.time(force=True),decimal_places=N_DECIMAL),width-5,height-offset//2,40,font='ubuntumedium,ubuntu',align='right',alignY='center')
+    if timer.run != None:
+        draw_segments()
+        pygame.draw.rect(screen,colors.backgroundalt,(0,0,width,offset),0)
+        draw_text(run.name,width/2,13,26,align='center')
+        draw_text(run.category,width/2,30,20,align='center')
+    draw_text(format_time(timer.time(force=True),decimal_places=N_DECIMAL),width-5,height-offset//(2 if timer.run else 1),40,font='ubuntumedium,ubuntu',align='right',alignY='center')
  
-    pygame.display.update() 
+    pygame.display.update()
+    KEYS_DOWN = pygame.key.get_pressed()
