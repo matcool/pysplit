@@ -4,6 +4,9 @@ import keyboard
 from pysplit import *
 from sys import argv
 
+# how many digits to show
+N_DECIMAL = 2
+
 def rgb(h):
     return (
         (h & 0xff0000) >> 16,
@@ -65,6 +68,7 @@ def draw_text(text,x,y,size,color=(255,255,255),font=None,align=None,alignY=None
         if alignY == 'center':
             yoff = -surface.get_height()/2
         screen.blit(surface,(x+xoff,y+yoff))
+        return surface, x+xoff, y+yoff
     except pygame.error:
         pass
 
@@ -78,11 +82,21 @@ def draw_segments():
         pygame.draw.rect(screen, color, (0,segHeight*i+offset,width,segHeight),0)
         draw_text(seg.name,5,int(segHeight*(i+0.5))+offset,int(segHeight//1.5),alignY='center')
         if seg.pb != None:
-            t = seg.pb
-            if i > current_seg - 1:
-                draw_text(format_time(t+s,decimal_places=2) if t+s < 60 else format_time(int(t+s),decimal_places=2),
-                    width-5,int(segHeight*(i+0.5))+offset,segHeight//3,align='right',alignY='center',font='ubuntumedium,ubuntumono')
-            s += t
+            s += seg.pb
+            time = s if i > current_seg - 1 else sum(timer.times[:i+1])
+            draw_text(format_time(time,decimal_places=N_DECIMAL if time < 60 else False),
+                width-5,int(segHeight*(i+0.5))+offset,segHeight//3,align='right',alignY='center',font='ubuntumedium,ubuntumono')
+            if i < current_seg and timer.state != TimerState.NOTHING:
+                color = colors.slower
+                if seg.best >= timer.times[i]:
+                    color = colors.gold
+                elif seg.pb > timer.times[i]:
+                    color = colors.faster
+                dt = sum(timer.times[:i+1])-s
+                dt = ('+' if dt > 0 else '') + format_time(dt, decimal_places=N_DECIMAL)
+
+                draw_text(dt, width*2//3, int(segHeight*(i+0.5))+offset, segHeight//3,
+                    color=color, align='center', font='ubuntumedium,ubuntumono')
 
 while True:
     for event in pygame.event.get():
@@ -98,6 +112,6 @@ while True:
     pygame.draw.rect(screen,colors.backgroundalt,(0,0,width,offset),0)
     draw_text(run.name,width/2,13,26,align='center')
     draw_text(run.category,width/2,30,20,align='center')
-    draw_text(format_time(timer.time(force=True),decimal_places=2),width-5,height-offset//2,40,font='ubuntumedium,ubuntu',align='right',alignY='center')
+    draw_text(format_time(timer.time(force=True),decimal_places=N_DECIMAL),width-5,height-offset//2,40,font='ubuntumedium,ubuntu',align='right',alignY='center')
  
     pygame.display.update() 
