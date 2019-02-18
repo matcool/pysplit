@@ -14,6 +14,8 @@ class TimerState(Enum):
     PAUSED = 3
 
 def format_time(s, force_unused=False, decimal_places=None):
+    prefix = '-' if s < 0 else ''
+    s = abs(s)
     if decimal_places == None: decimal_places = DECIMAL_ACCURACY
     decimal = str(float(s)).split('.')[1]
     s = int(s)
@@ -21,9 +23,9 @@ def format_time(s, force_unused=False, decimal_places=None):
     minutes, seconds = divmod(minutes, 60)
     pad = lambda x: '0'[len(str(x))-1:]+str(x)
     pad_decimal = lambda x: x[:decimal_places]+('0'*decimal_places)[len(x):]
-    return f"{pad(hours)+':' if force_unused else str(hours)+':' if hours != 0 else ''}\
+    return f"{prefix}{pad(hours)+':' if force_unused else str(hours)+':' if hours != 0 else ''}\
 {pad(minutes)+':' if any((hours,force_unused)) else str(minutes)+':' if minutes != 0 else ''}\
-{pad(seconds) if any((hours,minutes,force_unused)) else seconds}.{pad_decimal(decimal)}"
+{pad(seconds) if any((hours,minutes,force_unused)) else seconds}{'.' + pad_decimal(decimal) if decimal_places != False else ''}"
 
 def parse_time(s):
     s = s.split(':')
