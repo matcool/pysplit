@@ -3,6 +3,11 @@ from pygame.locals import *
 import keyboard
 from pysplit import *
 from sys import argv
+try:
+    import configmenu
+except ImportError:
+    print('Error while importing config menu, wxpython is probably not installed')
+    configmenu = None
 
 # how many digits to show
 N_DECIMAL = 2
@@ -58,6 +63,21 @@ def start_or_split(*args):
         timer.reset()
 
 keyboard.on_press_key('f5',start_or_split)
+
+def open_config():
+    global height
+    global size
+    global screen
+    if timer.state != TimerState.NOTHING:
+        print('Cannot open config menu while running')
+        return
+    if timer.run == None:
+        print('Cannot open config menu for non existent run')
+        return
+    configmenu.configMenu.open(timer.run)
+    height = offset*2 + len(run.segments) * segHeight
+    size = (width, height)
+    screen = pygame.display.set_mode(size, pygame.RESIZABLE)
 
 def draw_text(text,x,y,size,color=(255,255,255),font=None,align=None,alignY=None):
     try:
@@ -121,7 +141,12 @@ while True:
         elif event.type == VIDEORESIZE:
             size = width,height = event.size
             screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+
+    if configmenu != None and isPressed(pygame.K_F6):
+        open_config()
+
     screen.fill(colors.background)
+
     if timer.run != None:
         draw_segments()
         pygame.draw.rect(screen,colors.backgroundalt,(0,0,width,offset),0)
