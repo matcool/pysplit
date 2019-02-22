@@ -114,7 +114,7 @@ class Run:
 
     def save(self, path, lss=False):
         if lss:
-            # to be implemented
+            raise Exception('Not implemented')
             return
         else:
             final = self.__dict__.copy()
