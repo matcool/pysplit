@@ -14,6 +14,8 @@ class TimerState(Enum):
     PAUSED = 3
 
 def format_time(s, force_unused=False, decimal_places=None):
+    if s == None:
+        return '-'
     prefix = '-' if s < 0 else ''
     s = abs(s)
     if decimal_places == None: decimal_places = DECIMAL_ACCURACY
@@ -52,6 +54,8 @@ class Timer:
         self.times = []
         self.last_time = 0
         self.state = TimerState.RUNNING
+        if self.run != None:
+            self.run.attempts += 1
 
     def time(self, force=False):
         if self.state == TimerState.NOTHING:
@@ -70,8 +74,6 @@ class Timer:
         if self.run == None or len(self.run.segments) == 0 or len(self.times) == len(self.run.segments):
             self.state = TimerState.ENDED
             self.end_time = t + self.start_time
-            if self.run != None:
-                self.run.attempts += 1
 
     def reset(self, save=True):
         if save and self.run != None and len(self.run.segments) > 0:
@@ -79,11 +81,8 @@ class Timer:
             segments = self.run.segments
             for i,t in enumerate(self.times):
                 segments[i].add_time(t)
-                if segments[i].pb == None or pb > self.time():
+                if self.state == TimerState.ENDED and (segments[i].pb == None or pb > self.time()):
                     segments[i].pb = t
-
-        if self.state != TimerState.ENDED and self.run != None:
-            self.run.attempts += 1
 
         self.state = TimerState.NOTHING
         self.times = []
