@@ -81,7 +81,7 @@ class Timer:
             segments = self.run.segments
             for i,t in enumerate(self.times):
                 segments[i].add_time(t)
-                if self.state == TimerState.ENDED and (segments[i].pb == None or pb > self.time()):
+                if self.state == TimerState.ENDED and (pb == None or segments[i].pb == None or pb > self.time()):
                     segments[i].pb = t
 
         self.state = TimerState.NOTHING
