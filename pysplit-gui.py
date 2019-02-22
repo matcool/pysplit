@@ -150,7 +150,7 @@ while True:
             size = width,height = event.size
             screen = pygame.display.set_mode(size, pygame.RESIZABLE)
 
-    if configmenu != None and isPressed(pygame.K_F6):
+    if configmenu != None and isPressed(pygame.K_F7):
         open_config()
 
     screen.fill(colors.background)
