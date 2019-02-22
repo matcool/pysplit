@@ -64,6 +64,11 @@ def start_or_split(*args):
 
 keyboard.on_press_key('f5',start_or_split)
 
+def reset(*args):
+    timer.reset()
+
+keyboard.on_press_key('f6', reset)
+
 def open_config():
     global height
     global size
@@ -123,7 +128,10 @@ def draw_segments():
 
                 draw_text(dt, width*2//3, int(segHeight*(i+0.5))+offset, segHeight//3,
                     color=color, align='center', font='ubuntumedium,ubuntumono')
-
+        elif i < current_seg:
+            time = sum(timer.times[:i+1])
+            draw_text(format_time(time,decimal_places=N_DECIMAL if time < 60 else False),
+                width-5,int(segHeight*(i+0.5))+offset,segHeight//3,align='right',alignY='center',font='ubuntumedium,ubuntumono')
 def isPressed(key):
     # returns true if the key has just been pressed
     try:
