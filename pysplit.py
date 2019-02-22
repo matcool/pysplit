@@ -17,9 +17,9 @@ def format_time(s, force_unused=False, decimal_places=None):
     if s == None:
         return '-'
     prefix = '-' if s < 0 else ''
-    s = abs(s)
+    s = float(abs(s))
     if decimal_places == None: decimal_places = DECIMAL_ACCURACY
-    decimal = s % 1
+    decimal = str(s % 1)[2:]
     s = int(s)
     hours, minutes = divmod(s, 3600)
     minutes, seconds = divmod(minutes, 60)
@@ -115,7 +115,6 @@ class Run:
     def save(self, path, lss=False):
         if lss:
             raise Exception('Not implemented')
-            return
         else:
             final = self.__dict__.copy()
             final['segments'] = [i.__dict__ for i in self.segments]
